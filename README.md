@@ -9,3 +9,6 @@
 - Compiled binary will be in `.\bin\snake.exe`
 - To clean the directory run `make clean`
 - If you have any issues, try compiling with `make debug` to view the logs
+
+##### Note
+- This is only tested on windows
