@@ -22,6 +22,14 @@ long time_ms() {
 	return GetTickCount();
 }
 
+int sine(int speed, int time, int how_far, int overallY) {
+	double t = time_ms() / 2 % time;
+
+	double y = sin(t/speed) * how_far + overallY;
+	return round(y);
+
+}
+
 int main(int argc, char* argv[]) {
 
 	std::cout << "SDL_mixer init" << std::endl;
@@ -164,6 +172,7 @@ int main(int argc, char* argv[]) {
 
 	int apples_collected = 0;
 	bool in_menu = true;
+
 
 	while (running) {
 
@@ -473,7 +482,7 @@ int main(int argc, char* argv[]) {
 			SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surf);
 			SDL_Rect rect {
 				(int)(width/2-points.length()*50/2),
-				0,
+				sine(150, 1920, 2, 0),
 				(int)(points.length()*50),
 				100
 			};
@@ -608,14 +617,16 @@ int main(int argc, char* argv[]) {
 				SDL_RenderFillRect(renderer, &menu_apples[i]);
 			}
 
+
 			SDL_Surface* title_surf = TTF_RenderText_Solid(font, "SNAKE", {255,255,255});
 			SDL_Texture* title_message = SDL_CreateTextureFromSurface(renderer, title_surf);
 			SDL_Rect title_rect {
 				(int)(width/2-225),
-				(int)(height/5),
+				sine(150, 1920, 5, height/5),
 				450,
 				180
 			};
+			
 			
 			SDL_RenderCopy(renderer, title_message, NULL, &title_rect);
 
@@ -635,7 +646,8 @@ int main(int argc, char* argv[]) {
 			SDL_Texture* exit_message = SDL_CreateTextureFromSurface(renderer, exit_surf);
 			SDL_Rect exit_rect {
 				(int)(width/2-175),
-				(int)(height/5*3) + 75,
+				// sine(150, 1920, 5, height/5*3+75),
+				(int)(height/5*3+75),
 				350,
 				75
 			};
