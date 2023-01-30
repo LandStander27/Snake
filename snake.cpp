@@ -22,12 +22,6 @@ long time_ms() {
 	return GetTickCount();
 }
 
-double GetPos(double started, double begin, double end, double duration)
-{
-    return (end - begin) * (double)(SDL_GetTicks() - started) / duration + begin;
-
-}
-
 int main(int argc, char* argv[]) {
 
 	std::cout << "SDL_mixer init" << std::endl;
