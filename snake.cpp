@@ -18,16 +18,46 @@ const int block_size = 20;
 
 const long start_time = SDL_GetTicks();
 
+const SDL_Rect start_button {
+	(int)(width/2-75),
+	(int)(height/5*3),
+	150,
+	75
+};
+
+const SDL_Rect exit_button {
+	(int)(width/2-75),
+	(int)(height/5*3)+80,
+	150,
+	75
+};
+
+const SDL_Rect game_exit_button {
+	(int)(width-150),
+	1,
+	150,
+	75
+};
+
 long time_ms() {
 	return GetTickCount();
 }
 
-int sine(int speed, int time, int how_far, int overallY) {
+int sine(int speed, int time, int how_far, int overall) {
 	double t = time_ms() / 2 % time;
 
-	double y = sin(t/speed) * how_far + overallY;
+	double y = sin(t/speed) * how_far + overall;
 	return round(y);
 
+}
+
+bool is_in_button(SDL_Rect r, int x, int y) {
+
+	if ((x > r.x) && (x < r.x + r.w) && (y > r.y) && (y < r.y + r.h)) {
+		return true;
+	}
+
+	return false;
 }
 
 int main(int argc, char* argv[]) {
@@ -181,6 +211,66 @@ int main(int argc, char* argv[]) {
 				running = false;
 			}
 
+			if (event.type == SDL_MOUSEBUTTONDOWN) {
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					if (is_in_button(start_button, event.motion.x, event.motion.y) && in_menu) {
+						std::cout << "Start button press detected" << std::endl;
+						in_menu = false;
+					} else if (is_in_button(exit_button, event.motion.x, event.motion.y) && in_menu) {
+						std::cout << "Exit button press detected" << std::endl;
+						running = false;
+					} else if (is_in_button(game_exit_button, event.motion.x, event.motion.y) && !in_menu) {
+						snake.clear();
+						snake.push_back(SDL_Rect {
+							500,
+							500,
+							block_size,
+							block_size
+						});
+						head = snake[0];
+						snake.push_front(SDL_Rect {
+							500-25,
+							500,
+							block_size,
+							block_size
+						});
+						snake.push_front(SDL_Rect {
+							500-50,
+							500,
+							block_size,
+							block_size
+						});
+						menu_snake.clear();
+						menu_snake.push_back(SDL_Rect {
+							500,
+							500,
+							block_size,
+							block_size
+						});
+						menu_head = menu_snake[0];
+						menu_snake.push_front(SDL_Rect {
+							500-25,
+							500,
+							block_size,
+							block_size
+						});
+						menu_snake.push_front(SDL_Rect {
+							500-50,
+							500,
+							block_size,
+							block_size
+						});
+						menu_dir = 0;
+
+						last_dir = 0;
+						dir = 0;
+						last_update = time_ms();
+						apples_collected = 0;
+						in_menu = true;
+					}
+				}
+			}
+
 			if (event.type == SDL_KEYDOWN) {
 				if (last_dir == dir && !in_menu) {
 					if (event.key.keysym.sym == SDLK_s) {
@@ -203,65 +293,60 @@ int main(int argc, char* argv[]) {
 					}
 				}
 
-				if (event.key.keysym.sym == SDLK_ESCAPE) {
-					if (in_menu) {
-						running = false;
-					} else {
-						snake.clear();
-						snake.push_back(SDL_Rect {
-							500,
-							500,
-							block_size,
-							block_size
-						});
-						head = snake[0];
-						snake.push_front(SDL_Rect {
-							500-25,
-							500,
-							block_size,
-							block_size
-						});
-						snake.push_front(SDL_Rect {
-							500-50,
-							500,
-							block_size,
-							block_size
-						});
+				// if (event.key.keysym.sym == SDLK_ESCAPE) {
+				// 	if (!in_menu) {
+				// 		snake.clear();
+				// 		snake.push_back(SDL_Rect {
+				// 			500,
+				// 			500,
+				// 			block_size,
+				// 			block_size
+				// 		});
+				// 		head = snake[0];
+				// 		snake.push_front(SDL_Rect {
+				// 			500-25,
+				// 			500,
+				// 			block_size,
+				// 			block_size
+				// 		});
+				// 		snake.push_front(SDL_Rect {
+				// 			500-50,
+				// 			500,
+				// 			block_size,
+				// 			block_size
+				// 		});
+				// 		menu_snake.clear();
+				// 		menu_snake.push_back(SDL_Rect {
+				// 			500,
+				// 			500,
+				// 			block_size,
+				// 			block_size
+				// 		});
+				// 		menu_head = menu_snake[0];
+				// 		menu_snake.push_front(SDL_Rect {
+				// 			500-25,
+				// 			500,
+				// 			block_size,
+				// 			block_size
+				// 		});
+				// 		menu_snake.push_front(SDL_Rect {
+				// 			500-50,
+				// 			500,
+				// 			block_size,
+				// 			block_size
+				// 		});
+				// 		menu_dir = 0;
 
-						menu_snake.clear();
-						menu_snake.push_back(SDL_Rect {
-							500,
-							500,
-							block_size,
-							block_size
-						});
-						menu_head = menu_snake[0];
-						menu_snake.push_front(SDL_Rect {
-							500-25,
-							500,
-							block_size,
-							block_size
-						});
-						menu_snake.push_front(SDL_Rect {
-							500-50,
-							500,
-							block_size,
-							block_size
-						});
-
-						menu_dir = 0;
-
-						last_dir = 0;
-						dir = 0;
-						last_update = time_ms();
-						apples_collected = 0;
-
-						in_menu = true;
-					}
-				}
-				if (event.key.keysym.sym == SDLK_SPACE) {
-					in_menu = false;
-				}
+				// 		last_dir = 0;
+				// 		dir = 0;
+				// 		last_update = time_ms();
+				// 		apples_collected = 0;
+				// 		in_menu = true;
+				// 	}
+				// }
+				// if (event.key.keysym.sym == SDLK_SPACE) {
+				// 	in_menu = false;
+				// }
 				// std::cout << dir << std::endl;
 			}
 		}
@@ -471,6 +556,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		
+
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
@@ -486,6 +572,18 @@ int main(int argc, char* argv[]) {
 				(int)(points.length()*50),
 				100
 			};
+
+			SDL_Surface* game_exit_surf = TTF_RenderText_Solid(font, "Menu", {255,255,255});
+			SDL_Texture* game_exit_message = SDL_CreateTextureFromSurface(renderer, game_exit_surf);
+			SDL_Rect game_exit_rect {
+				(int)(width-150)+25,
+				1,
+				100,
+				75
+			};
+
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderDrawRect(renderer, &game_exit_button);
 
 			SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
 
@@ -507,8 +605,13 @@ int main(int argc, char* argv[]) {
 			}
 			// SDL_RenderFillRect(renderer, &head);
 			SDL_RenderCopy(renderer, message, NULL, &rect);
+			SDL_RenderCopy(renderer, game_exit_message, NULL, &game_exit_rect);
+
 			SDL_FreeSurface(surf);
 			SDL_DestroyTexture(message);
+
+			SDL_FreeSurface(game_exit_surf);
+			SDL_DestroyTexture(game_exit_message);
 		} else {
 
 			for (int i = 0; i < 2; i++) {
@@ -605,17 +708,21 @@ int main(int argc, char* argv[]) {
 			// 	}
 			// }
 
-			SDL_SetRenderDrawColor(renderer, 0, 125, 0, 255);
+			SDL_SetRenderDrawColor(renderer, 0, 62, 0, 255);
 			SDL_RenderFillRect(renderer, &menu_snake[2]);
-			SDL_SetRenderDrawColor(renderer, 0, 150, 0, 255);
+			SDL_SetRenderDrawColor(renderer, 0, 75, 0, 255);
 			SDL_RenderFillRect(renderer, &menu_snake[1]);
-			SDL_SetRenderDrawColor(renderer, 0, 175, 0, 255);
+			SDL_SetRenderDrawColor(renderer, 0, 87, 0, 255);
 			SDL_RenderFillRect(renderer, &menu_snake[0]);
 
-			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+			SDL_SetRenderDrawColor(renderer, 127, 0, 0, 255);
 			for (int i = 0; i < menu_apples.size(); i++) {
 				SDL_RenderFillRect(renderer, &menu_apples[i]);
 			}
+
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderDrawRect(renderer, &start_button);
+			SDL_RenderDrawRect(renderer, &exit_button);
 
 
 			SDL_Surface* title_surf = TTF_RenderText_Solid(font, "SNAKE", {255,255,255});
@@ -630,25 +737,24 @@ int main(int argc, char* argv[]) {
 			
 			SDL_RenderCopy(renderer, title_message, NULL, &title_rect);
 
-			SDL_Surface* start_surf = TTF_RenderText_Solid(font, "Press space to start", {255,255,255});
+			SDL_Surface* start_surf = TTF_RenderText_Solid(font, "Start", {255,255,255});
 			SDL_Texture* start_message = SDL_CreateTextureFromSurface(renderer, start_surf);
 			SDL_Rect start_rect {
-				(int)(width/2-175),
+				(int)(width/2-50),
 				(int)(height/5*3),
-				350,
+				100,
 				75
 			};
 			
 			SDL_RenderCopy(renderer, start_message, NULL, &start_rect);
 
-
-			SDL_Surface* exit_surf = TTF_RenderText_Solid(font, "Press escape to exit", {255,255,255});
+			SDL_Surface* exit_surf = TTF_RenderText_Solid(font, "Exit", {255,255,255});
 			SDL_Texture* exit_message = SDL_CreateTextureFromSurface(renderer, exit_surf);
 			SDL_Rect exit_rect {
-				(int)(width/2-175),
+				(int)(width/2-50),
 				// sine(150, 1920, 5, height/5*3+75),
-				(int)(height/5*3+75),
-				350,
+				(int)(height/5*3+80),
+				100,
 				75
 			};
 			
